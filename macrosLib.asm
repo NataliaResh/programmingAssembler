@@ -37,7 +37,7 @@ str: .asciz %str
 
 .macro pop1 %r1
 	lw %r1, 0(sp)
-	addi sp, sp, -4
+	addi sp, sp, 4
 .end_macro
 
 .macro push3 %r1 %r2 %r3
@@ -68,6 +68,16 @@ str: .asciz %str
 	lw %r2 4(sp)
 	lw %r1, 0(sp)
 	addi sp, sp, 16
+.end_macro
+
+.macro push5 %r1 %r2 %r3 %r4 %r5
+	push1 %r5
+	push4 %r1 %r2 %r3 %r4
+.end_macro
+
+.macro pop5 %r1 %r2 %r3 %r4 %r5
+	pop4 %r1 %r2 %r3 %r4
+	pop1 %r5
 .end_macro
 
 
