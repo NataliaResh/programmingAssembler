@@ -1,91 +1,147 @@
-.text
-.macro syscall %n
- 	li a7, %n
- 	ecall
-.end_macro
+start:
+	j main
+	
+.include "macrosLib.asm"
 
-.macro exit %ecode
-	li a0, %ecode
-	syscall 93
-.end_macro
 
-.macro readch
-	syscall 12
-.end_macro
-
-.macro printch
-	syscall 11
-.end_macro
-
-.macro readbcd
-	li t2, 58
-	bge a0, t2, exit
-	li t2, 48
-	blt a0, t2, exit
+chartobcd:  # char chartobcd(char)
+	li t0, 58
+	bge a0, t0, errorchartobcd
+	li t0, 48
+	blt a0, t0, errorchartobcd
 	addi a0, a0, -48
-.end_macro
+	ret
+errorchartobcd:
+	error "Inncorect symbol!"
 
-.macro bcdtochar
+
+readbcd:  # int readbcd();
+	push4 ra, s1, s2, s3
+	li s2, 1
+	li s1, 0
+	li s3, 8
+	readch
 	li t0, 10
-	bge a0, t0, exit
-	addi a0, a0, 48
-.end_macro
+	beq a0, t0, endreadbcd
+	li t0, 45
+	beq a0, t0, addminus
+	call chartobcd
+	add s1, s1, a0
+	slli s1, s1, 4
+	addi s2, s2, 1
+addminus:
+	addi s3, s3, 1
+loopreadbcd:
+	readch
+	li t0, 10
+	beq a0, t0, endreadbcd
+	li t0, 8
+	bge s2, t0, errorreadbcd
+	call chartobcd
+	add s1, s1, a0
+	slli s1, s1, 4
+	addi s2, s2, 1
+	j loopreadbcd
+endreadbcd:
+	add s1, s1, s3
+	mv a0, s1
+	pop4 ra, s1, s2, s3
+	ret
+errorreadbcd:
+	error "Maximum number of characters exceeded!"
 
-.macro op
+
+bcdtochar:
+	li t0, 10
+	bge a0, t0, errorbcdtochar
+	addi a0, a0, 48
+	ret
+errorbcdtochar:
+	error "Inncorect symbol!"
+	
+
+opbcd:  # int opbcd(char a0, int a1, int a2);
+	addi sp, sp, -4
+	sw ra, 0(sp)
 	li t0, 43
 	bne a0, t0, subop
-	addbcd
-	j endop
+	mv a0, a1
+	mv a1, a2
+	call addbcd
+	printch
+	j endopbcd
 subop:
 	li t0, 45
-	bne a0, t0, exit
-	subbcd
-endop:
-.end_macro
+	bne a0, t0, erroropbcd
+	mv a0, a1
+	mv a1, a2
+	call subbcd
+endopbcd:
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+erroropbcd:
+	error "Incorrect operation!"
 
-.macro addbcd
-	li t5, 0
-	li t6, 29
-	li s4, 0x0000000f
-	li s9, 0
+
+addbcd:  # int add(int a0, int a1);
+	push1 s1
+	li t1, 4
+	li t2, 0x000000f0
+	li t3, 0
+	li t4, 0  # symbol1
+	li t5, 0  # symbol2
+	li t6, 0  # resultsymbol
+	li s1, 0  # result
 loopadd:
-	and s7, s1, s4
-	and s8, s2, s4
-	srl s7, s7, t5
-	srl s8, s8, t5
-	add a0, s7, s8
-	beqz s9, m1add #if s9 != 0:
-	add a0, a0, s9
-	li s9, 0
+	and t4, a0, t2
+	and t5, a1, t2
+	srl t4, t4, t1
+	srl t5, t5, t1
+	add t6, t4, t5
+	beqz t3, m1add #if t3 != 0:
+	add t6, t6, t3
+	li t3, 0
 m1add: #if !(9 >= a0)
 	li t0, 9
-	bge t0, a0 m2add
-	li s9, 1
-	li t0, 10
-	sub a0, a0, t0
+	bge t0, t6 m2add
+	li t3, 1
+	addi t6, t6, -10
 m2add:
-	slli s0, s0, 4
-	add s0, s0, a0
-	slli s4, s4, 4
-	addi t5, t5, 4
-	blt t5, t6 loopadd
-.end_macro #ans in s0
+	slli s1, s1, 4
+	add s1, s1, t6
+	slli t2, t2, 4
+	addi t1, t1, 4
+	li t0, 29
+	blt t1, t0 loopadd
+	slli s1, s1, 4
+	li a0, 1
+	printch
+	li a0, 0
+	printch
+	mv a1, s1
+	printch
+	pop1 s1
+	ret
 
-.macro subbcd
-	li t5, 0
-	li t6, 29
-	li s4, 0x0000000f
-	li s9, 0
+
+subbcd:  # int subbcd(int a0, int a1);
+	push1 s1
+	li t1, 0
+	li t2, 0x000000f0
+	li t3, 0
+	li t4, 0
+	li t6, 0
+	li s1, 0  # result
+	li t5, 4
 loopsub:
-	and s7, s1, s4
-	and s8, s2, s4
-	
-	srl s7, s7, t5
-	srl s8, s8, t5
-	
-	bge s7, s8, m1sub # if s7 < s8 (s7 >= s8)
-	addi s7, s7, 10
-	mv t4, s4
+	and a2, a0, t2
+	and a3, a1, t2
+	srl a2, a2, t5
+	srl a3, a3, t5
+	bge a2, a3, m1sub
+	addi a2, a2, 10
+	mv t4, t2
 	mv t3, t5
 nextdigit:
 	slli t4, t4, 4
@@ -95,65 +151,56 @@ nextdigit:
 	bgtz t1,greaterzero #if t1 == 0 (t1 > 0)
 	li t1, 9
 	sll t1, t1, t3
-	add s1, s1, t1
+	add a0, a0, t1
 	j nextdigit
-greaterzero:
-	# else if t1 > 0
+greaterzero:  # else if t1 > 0
 	li t1, 1
 	sll t1, t1, t3
-	sub s1, s1, t1
+	sub a0, a0, t1
 m1sub:
-	sub a0, s7, s8
-	
-	slli s0, s0, 4
-	add s0, s0, a0
-	slli s4, s4, 4
-	addi t5, t5, 4
-	blt t5, t6 loopsub
-.end_macro #ans in s0
-
-main:
-	li s10, 10
-metka1:
-	readch
-	beq a0, s10, metka3
-	readbcd
-	add s1, s1, a0
-metka2:
-	readch
-	beq a0, s10, metka3
-	readbcd
+	sub t6, a2, a3
 	slli s1, s1, 4
-	add s1, s1, a0
-	j metka2
-metka3:
-	readch
-	beq a0, s10, metka5
-	readbcd
-	add s2, s2, a0
-metka4:
-	readch
-	beq a0, s10, metka5
-	readbcd
-	slli s2 s2, 4
-	add s2, s2, a0
-	j metka4
+	add s1, s1, t6
+	slli t2, t2, 4
+	addi t5, t5, 4
+	li t0, 29
+	blt t5, t0 loopsub
+	slli s1, s1, 4
+	mv a0, s1
+	pop1 s1
+	ret
+
+
+printbcd:  # void printbcd(int)
+	push4 ra, s1, s2, s3
+	li s1, 4
+	li s2, 0x000000f0
+	mv s3, a0
+loopprintbcd:
+	and a0, s3, s2
+	srl a0, a0, s1
+	call bcdtochar
+	printch
+	slli s2, s2, 4
+	addi s1, s1, 4
+	li t0, 29
+	blt s1, t0, loopprintbcd
+	pop4 ra, s1, s2, s3
+	ret
 	
-metka5:
+
+main:	
+	call readbcd
+	mv s1, a0
+	call readbcd
+	mv s2, a0
 	readch #read op
-	op
-	mv a0, s10
-	printch
-	li s5, 0
-	li s6, 29
-	li s4, 0x0000000f
-loopprint:
-	and a0, s0, s4
-	srl a0, a0, s5
-	bcdtochar
-	printch
-	slli s4, s4, 4
-	addi s5, s5, 4
-	blt s5, s6, loopprint
+	mv a1, s1
+	mv a2, s2
+	call opbcd
+	mv s1, a0
+	printendl
+	mv a0, s1
+	call printbcd
 exit:
 	exit 0

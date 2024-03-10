@@ -86,9 +86,11 @@ andop:
 	ret
 orop:
 	li t0, 124
-	bne a0, t0, exit
+	bne a0, t0, errorop
 	or a0, a1, a2
 	ret
+errorop:
+	error "Incorrect operation!"
 
 
 printhex:  # void printhex(int);
@@ -96,13 +98,13 @@ printhex:  # void printhex(int);
 	li s1, 28
 	li s2, 0xf0000000
 	mv s3, a0
-loopprint:
+loopprinthex:
 	and a0, s3, s2
 	srl a0, a0, s1
 	call hextochar
 	printch
 	srli s2, s2, 4
 	addi s1, s1, -4
-	bgez s1, loopprint
+	bgez s1, loopprinthex
 	pop4 ra, s1, s2, s3
 	ret
