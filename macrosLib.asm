@@ -17,8 +17,10 @@
 .end_macro
 
 .macro printendl
+	push1 a0
 	li a0, 10
 	printch
+	pop1 a0
 .end_macro
 
 .macro error %str

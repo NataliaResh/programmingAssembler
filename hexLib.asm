@@ -3,6 +3,8 @@
 #  char hextochar(char);
 #  int op(char op, int a, int b);
 #  void printhex(int);
+#  int mulhex(int, int);
+
 
 chartohex:  # char chartohex();
 	slti t0, a0, 103
@@ -91,6 +93,23 @@ orop:
 	ret
 errorop:
 	error "Incorrect operation!"
+	
+
+mulhex:  #  int mulhex(int, int);
+	li t0, 1
+	li t1, 0
+	li t3, 0  # result
+loopop:
+	and t2, a1, t0
+	beqz t2, endloopop
+	sll t2, a0, t1
+	add t3, t3, t2
+endloopop:
+	slli t0, t0, 1
+	addi t1, t1, 1
+	bnez t0, loopop
+	mv a0, t3
+	ret
 
 
 printhex:  # void printhex(int);
