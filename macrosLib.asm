@@ -42,6 +42,18 @@ str: .asciz %str
 	addi sp, sp, 4
 .end_macro
 
+.macro push2 %r1 %r2
+	addi sp, sp, -8
+	sw %r1, 0(sp)
+	sw %r2, 4(sp)
+.end_macro
+
+.macro pop2 %r1 %r2
+	lw %r2, 4(sp)
+	lw %r1, 0(sp)
+	addi sp, sp, 8
+.end_macro
+
 .macro push3 %r1 %r2 %r3
 	addi sp, sp, -12
 	sw %r1, 0(sp)

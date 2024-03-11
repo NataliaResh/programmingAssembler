@@ -4,6 +4,9 @@
 #  int op(char op, int a, int b);
 #  void printhex(int);
 #  int mulhex(int, int);
+#  int mul10(int)
+#  int div10(int)
+#  int mod10(int)
 
 
 chartohex:  # char chartohex();
@@ -111,6 +114,41 @@ endloopop:
 	mv a0, t3
 	ret
 
+
+mul10:  #  int mul10(int)
+	slli t0, a0, 3
+	add t0, t0, a0
+	add t0, t0, a0
+	mv a0, t0
+	ret
+
+
+div10:  #  int div10(int)
+	push2 ra, s1
+	li s1, 0
+	li t0, 10
+	blt a0, t0, enddiv10
+	mv s1, a0
+	srli a0, a0, 1
+	call div10
+	srli s1, s1, 2
+	sub s1, s1, a0
+	srli s1, s1, 1
+enddiv10:
+	mv a0, s1
+	pop2 ra, s1
+	ret
+
+
+mod10:  #  int mod10(int)
+	push2 ra, s1
+	mv s1, a0
+	call div10
+	call mul10
+	sub a0, s1, a0
+	pop2 ra, s1
+	ret
+	
 
 printhex:  # void printhex(int);
 	push4 ra, s1, s2, s3
