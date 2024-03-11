@@ -1,21 +1,11 @@
-#  char chartobcd(char);
 #  int readbcd();
-#  char bcdtochar(char);
 #  int opbcd(char a0, int a1, int a2);
 #  int addbcd(int a0, int a1);
 #  int subbcd(int a0, int a1);
 #  void printbcd(int);
 
 
-chartobcd:  # char chartobcd(char);
-	li t0, 58
-	bge a0, t0, errorchartobcd
-	li t0, 48
-	blt a0, t0, errorchartobcd
-	addi a0, a0, -48
-	ret
-errorchartobcd:
-	error "Inncorect symbol!"
+.include "decimalLib.asm"
 
 
 readbcd:  # int readbcd();
@@ -31,7 +21,7 @@ readbcd:  # int readbcd();
 	addi s3, s3, 1
 	j loopreadbcd
 positive:
-	call chartobcd
+	call chartodecimal
 	add s1, s1, a0
 	slli s1, s1, 4
 	addi s2, s2, 1
@@ -41,7 +31,7 @@ loopreadbcd:
 	beq a0, t0, endreadbcd
 	li t0, 8
 	bge s2, t0, errorreadbcd
-	call chartobcd
+	call chartodecimal
 	add s1, s1, a0
 	slli s1, s1, 4
 	addi s2, s2, 1
@@ -53,15 +43,6 @@ endreadbcd:
 	ret
 errorreadbcd:
 	error "Maximum number of characters exceeded!"
-
-
-bcdtochar:  # char bcdtochar(char);
-	li t0, 10
-	bge a0, t0, errorbcdtochar
-	addi a0, a0, 48
-	ret
-errorbcdtochar:
-	error "Inncorect symbol!"
 	
 
 opbcd:  # int opbcd(char a0, int a1, int a2);
@@ -208,7 +189,7 @@ printbcd:  # void printbcd(int);
 loopprintbcd:
 	and a0, s3, s2
 	srl a0, a0, s1
-	call bcdtochar
+	call decimaltochar
 	printch
 	slli s2, s2, 4
 	addi s1, s1, 4

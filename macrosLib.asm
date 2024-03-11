@@ -32,6 +32,14 @@ str: .asciz %str
 	exit 1
 .end_macro
 
+
+.macro swap %r1 %r2
+	mv t0, %r1
+	mv %r1, %r2
+	mv %r2, t0
+.end_macro
+
+
 .macro push1 %r1
 	addi sp, sp, -4
 	sw %r1, 0(sp)
