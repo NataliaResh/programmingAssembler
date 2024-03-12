@@ -27,9 +27,20 @@ decimaltochar:  #  char decimaltochar(char);
 errordecimaltochar:
 	error "Inncorect symbol!"
 	
-	
+
+
+.macro addwithcheck %r1 %r2 %r3
+	add %r1, %r2, %r3
+	slt t0, %r3, zero
+	slt t1, %r1, %r2
+	beq t0, t1, endaddwithcheck
+	error "Overflow!"
+endaddwithcheck:
+.end_macro
+
+
 readdecimal:  #  int readdecimal();
-	push4 ra, s1, s2, s3
+	push3 ra, s1, s3
 	li s2, 1
 	li s1, 0
 	li s3, 0
@@ -43,29 +54,33 @@ readdecimal:  #  int readdecimal();
 positive:
 	call chartodecimal
 	add s1, s1, a0
-	addi s2, s2, 1
 loopreaddecimal:
 	readch
 	li t0, 10
 	beq a0, t0, endreaddecimal
 	li t0, 8
-	bge s2, t0, errorreaddecimal
 	call chartodecimal
 	swap s1, a0
 	call mul10
 	swap s1, a0
-	add s1, s1, a0
-	addi s2, s2, 1
+	addwithcheck t3, s1, a0
+	mv s1, t3
 	j loopreaddecimal
 endreaddecimal:
 	beqz s3, movedecimal
 	neg s1, s1
 movedecimal:
 	mv a0, s1
-	pop3 ra, s1, s2
+	pop3 ra, s1, s3
 	ret
-errorreaddecimal:
-	error "Maximum number of characters exceeded!"
+
+
+opdecimal:  # int opdecimal(char op, int a, int b);
+	li t0, 43
+	beq a0, t0, addopdecimal
+	neg a2, a2
+addopdecimal:
+	addwithcheck a0, a1, a2
 	ret
 
 
@@ -95,11 +110,15 @@ endloopdiv10n:
 
 
 mul10:  #  int mul10(int)
+	li t0, 214748364
+	bge a0, t0, muloverflowerror
 	slli t0, a0, 3
 	add t0, t0, a0
 	add t0, t0, a0
 	mv a0, t0
 	ret
+muloverflowerror:
+	error "Overflow!"
 
 
 div10:  #  int div10(int)

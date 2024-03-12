@@ -17,10 +17,10 @@ readbcd:  # int readbcd();
 	li t0, 10
 	beq a0, t0, endreadbcd
 	li t0, 45
-	bne a0, t0, positive
+	bne a0, t0, positivebcd
 	addi s3, s3, 1
 	j loopreadbcd
-positive:
+positivebcd:
 	call chartodecimal
 	add s1, s1, a0
 	slli s1, s1, 4

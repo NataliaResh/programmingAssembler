@@ -27,6 +27,7 @@
 .data
 str: .asciz %str
 .text
+	printendl
 	la a0, str
 	syscall 4
 	exit 1
