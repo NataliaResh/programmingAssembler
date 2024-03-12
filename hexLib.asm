@@ -8,7 +8,7 @@
 
 chartohex:  # char chartohex(char);
 	li t0, 103
-	bge a0,, t0, errorhex
+	bge a0, t0, errorhex
 	li t0, 97
 	blt a0, t0, big
 	addi a0, a0, -87

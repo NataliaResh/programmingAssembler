@@ -1,8 +1,11 @@
-#  char chartodecimal(char);rtobcd(char);
+#  char chartodecimal(char);
 #  char decimaltochar(char);
 # void printdecimal(int);
 #  int div10n(int a, int n);
 #  int lendecimal(int)
+#  int mul10(int)
+#  int div10(int)
+#  int mod10(int)
 
 
 chartodecimal:  #  char chartodecimal(char);
@@ -26,12 +29,18 @@ errordecimaltochar:
 	
 	
 readdecimal:  #  int readdecimal();
-	push3 ra, s1, s2
+	push4 ra, s1, s2, s3
 	li s2, 1
 	li s1, 0
+	li s3, 0
 	readch
 	li t0, 10
 	beq a0, t0, endreaddecimal
+	li t0, 45
+	bne a0, t0, positive
+	addi s3, s3, 1
+	j loopreaddecimal
+positive:
 	call chartodecimal
 	add s1, s1, a0
 	addi s2, s2, 1
@@ -49,6 +58,9 @@ loopreaddecimal:
 	addi s2, s2, 1
 	j loopreaddecimal
 endreaddecimal:
+	beqz s3, movedecimal
+	sub s1, zero, s1
+movedecimal:
 	mv a0, s1
 	pop3 ra, s1, s2
 	ret
@@ -82,6 +94,41 @@ endloopdiv10n:
 	ret
 
 
+mul10:  #  int mul10(int)
+	slli t0, a0, 3
+	add t0, t0, a0
+	add t0, t0, a0
+	mv a0, t0
+	ret
+
+
+div10:  #  int div10(int)
+	push2 ra, s1
+	li s1, 0
+	li t0, 10
+	blt a0, t0, enddiv10
+	mv s1, a0
+	srli a0, a0, 1
+	call div10
+	srli s1, s1, 2
+	sub s1, s1, a0
+	srli s1, s1, 1
+enddiv10:
+	mv a0, s1
+	pop2 ra, s1
+	ret
+
+
+mod10:  #  int mod10(int)
+	push2 ra, s1
+	mv s1, a0
+	call div10
+	call mul10
+	sub a0, s1, a0
+	pop2 ra, s1
+	ret
+	
+	
 printdecimal:  # void printdecimal(int);
 	push3 ra, s1, s2
 	mv s1, a0

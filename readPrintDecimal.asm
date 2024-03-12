@@ -3,7 +3,6 @@ start:
 
 
 .include "macrosLib.asm"
-.include "hexLib.asm"
 .include "decimalLib.asm"
 
 
