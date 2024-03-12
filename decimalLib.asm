@@ -103,7 +103,8 @@ mul10:  #  int mul10(int)
 
 
 div10:  #  int div10(int)
-	push2 ra, s1
+	push3 ra, s1, s2
+	mv s2, a0
 	li s1, 0
 	li t0, 10
 	blt a0, t0, enddiv10
@@ -115,7 +116,10 @@ div10:  #  int div10(int)
 	srli s1, s1, 1
 enddiv10:
 	mv a0, s1
-	pop2 ra, s1
+	call mul10
+	slt a0, s2, a0
+	sub a0, s1, a0
+	pop3 ra, s1, s2
 	ret
 
 
