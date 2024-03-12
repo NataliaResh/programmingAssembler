@@ -1,18 +1,14 @@
-#  char chartohex();
+#  char chartohex(char);
 #  int readhex();
 #  char hextochar(char);
 #  int op(char op, int a, int b);
 #  void printhex(int);
 #  int mulhex(int, int);
-#  int mul10(int)
-#  int div10(int)
-#  int mod10(int)
 
 
-chartohex:  # char chartohex();
-	slti t0, a0, 103
-	li t1, 1
-	bne t0, t1, errorhex
+chartohex:  # char chartohex(char);
+	li t0, 103
+	bge a0,, t0, errorhex
 	li t0, 97
 	blt a0, t0, big
 	addi a0, a0, -87
@@ -39,12 +35,6 @@ readhex:  # int readhex();
 	push3 ra, s1, s2
 	li s2, 0
 	li s1, 0
-	readch
-	li t0, 10
-	beq a0, t0, endreadhex
-	call chartohex
-	add s1, s1, a0
-	addi s2, s2, 1
 loopreadhex:
 	readch
 	li t0, 10
@@ -112,41 +102,6 @@ endloopop:
 	addi t1, t1, 1
 	bnez t0, loopop
 	mv a0, t3
-	ret
-
-
-mul10:  #  int mul10(int)
-	slli t0, a0, 3
-	add t0, t0, a0
-	add t0, t0, a0
-	mv a0, t0
-	ret
-
-
-div10:  #  int div10(int)
-	push2 ra, s1
-	li s1, 0
-	li t0, 10
-	blt a0, t0, enddiv10
-	mv s1, a0
-	srli a0, a0, 1
-	call div10
-	srli s1, s1, 2
-	sub s1, s1, a0
-	srli s1, s1, 1
-enddiv10:
-	mv a0, s1
-	pop2 ra, s1
-	ret
-
-
-mod10:  #  int mod10(int)
-	push2 ra, s1
-	mv s1, a0
-	call div10
-	call mul10
-	sub a0, s1, a0
-	pop2 ra, s1
 	ret
 	
 
