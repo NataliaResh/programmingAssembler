@@ -59,7 +59,7 @@ loopreaddecimal:
 	j loopreaddecimal
 endreaddecimal:
 	beqz s3, movedecimal
-	sub s1, zero, s1
+	neg s1, s1
 movedecimal:
 	mv a0, s1
 	pop3 ra, s1, s2
@@ -136,6 +136,12 @@ mod10:  #  int mod10(int)
 printdecimal:  # void printdecimal(int);
 	push3 ra, s1, s2
 	mv s1, a0
+	bgez a0, mainprint
+	li a0, 45
+	printch
+	neg s1, s1
+	mv a0, s1
+mainprint:
 	call lendecimal
 	mv s2, a0
 	addi s2, s2, -1
