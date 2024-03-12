@@ -126,9 +126,12 @@ m2add:
 	addi t1, t1, 4
 	li t0, 29
 	blt t1, t0 loopadd
+	bnez t3, erroroverflowbcd
 	mv a0, s1
 	pop1 s1
 	ret
+erroroverflowbcd:
+	error "Overflow!"
 
 
 subbcd:  # int subbcd(int a0, int a1);

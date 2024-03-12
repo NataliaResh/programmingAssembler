@@ -5,7 +5,7 @@ start:
 .include "BCDLib.asm"
 
 
-main:	
+main:
 	call readbcd
 	mv s1, a0
 	call readbcd
