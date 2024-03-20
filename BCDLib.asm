@@ -37,8 +37,7 @@ loopreadbcd:
 	addi s2, s2, 1
 	j loopreadbcd
 endreadbcd:
-	add s1, s1, s3
-	mv a0, s1
+	add a0, s1, s3
 	pop4 ra, s1, s2, s3
 	ret
 errorreadbcd:
@@ -46,57 +45,74 @@ errorreadbcd:
 	
 
 opbcd:  # int opbcd(char a0, int a1, int a2);
-	push3 ra, s1, s2
-	li t0, 0x0000000f
-	and s1, a1, t0
-	and s2, a2, t0
-	sub a1, a1, s1
-	sub a2, a2, s2
-	li t0, 43
-	beq a0, t0, addop
-	li t0, 45
-	bne a0, t0, erroropbcd
-	li t0, 0x0000000f
-	li t0, 10
-	bne s2, t0, reverse
-	addi t0, t0, 1
-reverse:
-	mv s2, t0	
-addop:
-	slli s1, s1, 28
-	slli s2, s2, 28
+	push1 ra
+	mv t1, a0
 	mv a0, a1
 	mv a1, a2
-	beq s1, s2, addequalsign
-	bge a0, a1, addgreater
-	mv t0, a0
-	mv a0, a1
-	mv a1, t0
-	mv t0, s1
-	mv s1, s2
-	mv s2, t0
-addgreater:
+	li t0, '+'
+	beq t1, t0, addopcall
+	li t0, '-'
+	bne t1, t0, erroropbcd
 	call subbcd
-	add a0, a0, s1
 	j endopbcd
-addequalsign:
+addopcall:
 	call addbcd
-	add a0, a0, s1 
-	j endopbcd
-subop:
-	li t0, 45
-	bne a0, t0, erroropbcd
-	mv a0, a1
-	mv a1, a2
-	call subbcd
 endopbcd:
-	pop3 ra, s1, s2
+	pop1 ra
 	ret
 erroropbcd:
 	error "Incorrect operation!"
 
 
-addbcd:  # int addbcd(int a0, int a1);
+.macro getmoduleandsign %r1, %r2
+	li t0, 0xf
+	and %r2, %r1, t0
+	sub %r1, %r1, %r2
+.end_macro
+
+
+subbcd:
+	push1 ra
+	getmoduleandsign a0, a2
+	getmoduleandsign a1, a3
+	li t0, 10
+	bne a3, t0, reverse
+	addi t0, t0, 1
+reverse:
+	mv a3, t0
+	call sumbcd
+	pop1 ra
+	ret
+	
+
+addbcd:  # int addbcd(int, int)
+	push1 ra
+	getmoduleandsign a0, a2
+	getmoduleandsign a1, a3
+	call sumbcd
+	pop1 ra
+	ret
+	
+	
+sumbcd:  # int sumbcd(int a, int b, int sa, int sb);
+	push1 ra
+	beq a2, a3, addequalsign
+	bge a0, a1, addgreater
+	swap a0, a1
+	swap a2, a3
+addgreater:
+	call subbcdmodule
+	add a0, a0, a2
+	j endopbcd
+addequalsign:
+	call addbcdmodule
+	add a0, a0, a2
+endsumbcd:
+	pop1 ra
+	ret
+	
+
+addbcdmodule:  # int addbcdmodule(int a0, int a1);
 	push1 s1
 	li t1, 4
 	li t2, 0x000000f0
@@ -120,7 +136,7 @@ m1add: #if !(9 >= a0)
 	li t3, 1
 	addi t6, t6, -10
 m2add:
-	slli s1, s1, 4
+	sll t6, t6, t1
 	add s1, s1, t6
 	slli t2, t2, 4
 	addi t1, t1, 4
@@ -134,7 +150,7 @@ erroroverflowbcd:
 	error "Overflow!"
 
 
-subbcd:  # int subbcd(int a0, int a1);
+subbcdmodule:  # int subbcd(int a0, int a1);
 	push5 s1, s4, s7, s8, s0
 	li s1, 0
 	li t0, 0
@@ -157,7 +173,7 @@ nextdigit:
 	addi t3, t3, 4
 	and t1, a0, t4
 	srl t1, t1, t3 # next digit s1 in t1
-	bgtz t1,greaterzero #if t1 == 0 (t1 > 0)
+	bgtz t1, greaterzero #if t1 == 0 (t1 > 0)
 	li t1, 9
 	sll t1, t1, t3
 	add a0, a0, t1
@@ -168,7 +184,7 @@ greaterzero: # else if t1 > 0
 	sub a0, a0, t1
 m1sub:
 	sub t0, s7, s8
-	slli s0, s0, 4
+	sll t0, t0, t5
 	add s0, s0, t0
 	slli s4, s4, 4
 	addi t5, t5, 4
@@ -180,23 +196,23 @@ m1sub:
 
 printbcd:  # void printbcd(int);
 	push4 ra, s1, s2, s3
-	li s1, 0
-	li s2, 0x0000000f
+	li s1, 28
+	li s2, 0xf0000000
 	mv s3, a0
-	li t0, 0xf0000000
+	li t0, 0xf
 	and t0, s3, t0
-	li t1, 0xa0000000
+	li t1, 0xa
 	beq t0, t1, loopprintbcd
-	li a0, 45
+	li a0, '-'
 	printch
 loopprintbcd:
 	and a0, s3, s2
 	srl a0, a0, s1
 	call decimaltochar
 	printch
-	slli s2, s2, 4
-	addi s1, s1, 4
-	li t0, 25
-	blt s1, t0, loopprintbcd
+	srli s2, s2, 4
+	addi s1, s1, -4
+	li t0, 4
+	bge s1, t0, loopprintbcd
 	pop4 ra, s1, s2, s3
 	ret
