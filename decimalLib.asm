@@ -128,11 +128,10 @@ div10:  #  int div10(int)
 	li t0, 10
 	blt a0, t0, enddiv10
 	mv s1, a0
-	srli a0, a0, 1
+	srli a0, a0, 2
 	call div10
-	srli s1, s1, 2
+	srli s1, s1, 3
 	sub s1, s1, a0
-	srli s1, s1, 1
 enddiv10:
 	mv a0, s1
 	call mul10
