@@ -1,7 +1,6 @@
 #  char chartodecimal(char);
 #  char decimaltochar(char);
-# void printdecimal(int);
-#  int div10n(int a, int n);
+#  void printdecimal(int);
 #  int lendecimal(int)
 #  int mul10(int)
 #  int div10(int)
@@ -93,19 +92,6 @@ looplendecimal:
 	addi s1, s1, 1
 	bgtz a0, looplendecimal
 	mv a0, s1
-	pop2 ra, s1
-	ret
-
-
-div10n:  #  int div10n(int a, int n);
-	push2 ra, s1
-	mv s1, a1
-	beqz s1, endloopdiv10n
-loopdiv10n:
-	call div10
-	addi s1, s1, -1
-	bnez s1, loopdiv10n
-endloopdiv10n:
 	pop2 ra, s1
 	ret
 
