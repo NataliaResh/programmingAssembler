@@ -16,7 +16,7 @@ readbcd:  # int readbcd();
 	readch
 	li t0, 10
 	beq a0, t0, endreadbcd
-	li t0, 45
+	li t0, '-'
 	bne a0, t0, positivebcd
 	addi s3, s3, 1
 	j loopreadbcd
@@ -115,7 +115,7 @@ endsumbcd:
 addbcdmodule:  # int addbcdmodule(int a0, int a1);
 	push1 s1
 	li t1, 4
-	li t2, 0x000000f0
+	li t2, 0xf0
 	li t3, 0
 	li t4, 0  # symbol1
 	li t5, 0  # symbol2

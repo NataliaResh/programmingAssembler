@@ -41,13 +41,12 @@ endaddwithcheck:
 
 readdecimal:  #  int readdecimal();
 	push3 ra, s1, s3
-	li s2, 1
 	li s1, 0
 	li s3, 0
 	readch
 	li t0, 10
 	beq a0, t0, endreaddecimal
-	li t0, 45
+	li t0, '-'
 	bne a0, t0, positive
 	addi s3, s3, 1
 	j loopreaddecimal
@@ -58,11 +57,9 @@ loopreaddecimal:
 	readch
 	li t0, 10
 	beq a0, t0, endreaddecimal
-	li t0, 8
 	call chartodecimal
 	swap s1, a0
 	call mul10
-	swap s1, a0
 	addwithcheck t3, s1, a0
 	mv s1, t3
 	j loopreaddecimal
@@ -76,12 +73,16 @@ movedecimal:
 
 
 opdecimal:  # int opdecimal(char op, int a, int b);
-	li t0, 43
+	li t0, '+'
 	beq a0, t0, addopdecimal
+	li t0, '-'
+	bne a0, t0, erroropdecimal
 	neg a2, a2
 addopdecimal:
 	addwithcheck a0, a1, a2
 	ret
+erroropdecimal:
+	error "Inncorect operator!"
 
 
 lendecimal:  #  int lendecimal(int)
@@ -114,8 +115,7 @@ mul10:  #  int mul10(int)
 	bge a0, t0, muloverflowerror
 	slli t0, a0, 3
 	add t0, t0, a0
-	add t0, t0, a0
-	mv a0, t0
+	add a0, t0, a0
 	ret
 muloverflowerror:
 	error "Overflow!"
@@ -154,25 +154,26 @@ mod10:  #  int mod10(int)
 	
 printdecimal:  # void printdecimal(int);
 	push3 ra, s1, s2
+	li s2, 0
 	mv s1, a0
-	bgez a0, mainprint
-	li a0, 45
+	bgez a0, digitstostack
+	li a0, '-'
 	printch
 	neg s1, s1
 	mv a0, s1
-mainprint:
-	call lendecimal
-	mv s2, a0
-	addi s2, s2, -1
-loopprintdecimal:
-	mv a0, s1
-	mv a1, s2
-	call div10n
+digitstostack:
 	call mod10
+	push1 a0
+	mv a0, s1
+	call div10
+	mv s1, a0
+	addi s2, s2, 1
+	bnez a0, digitstostack
+loopprintdecimal:
+	pop1 a0
 	call decimaltochar
 	printch
 	addi s2, s2, -1
-	li t0, 0
-	bge s2, t0, loopprintdecimal
+	bnez s2, loopprintdecimal
 	pop3 ra, s1, s2
 	ret
