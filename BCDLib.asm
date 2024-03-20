@@ -71,7 +71,7 @@ erroropbcd:
 .end_macro
 
 
-subbcd:
+subbcd:  # int subbcd(int, int)
 	push1 ra
 	getmoduleandsign a0, a2
 	getmoduleandsign a1, a3
@@ -150,7 +150,7 @@ erroroverflowbcd:
 	error "Overflow!"
 
 
-subbcdmodule:  # int subbcd(int a0, int a1);
+subbcdmodule:  # int subbcdmodule(int a0, int a1);
 	push5 s1, s4, s7, s8, s0
 	li s1, 0
 	li t0, 0
