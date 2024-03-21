@@ -125,12 +125,11 @@ loopadd:
 	add t6, t4, t5  # resultsymbol
 	add t6, t6, t3
 	li t3, 0
-m1add: #if !(9 >= a0)
 	li t0, 9
-	bge t0, t6 m2add
+	bge t0, t6 m1add
 	li t3, 1
 	addi t6, t6, -10
-m2add:
+m1add:
 	sll t6, t6, t1
 	add s1, s1, t6
 	slli t2, t2, 4
@@ -146,46 +145,31 @@ erroroverflowbcd:
 
 
 subbcdmodule:  # int subbcdmodule(int a0, int a1);
-	push5 s1, s4, s7, s8, s0
-	li s1, 0
-	li t0, 0
+	push1 s1
+	li t1, 4
+	li t2, 0xf0
 	li t3, 0
-	li t4, 0
-	li t5, 4
-	li t6, 29
-	li s4, 0xf0
+	li s1, 0  # result
 loopsub:
-	and s7, a0, s4
-	and s8, a1, s4
-	srl s7, s7, t5
-	srl s8, s8, t5
-	bge s7, s8, m1sub # if s7 < s8 (s7 >= s8)
-	addi s7, s7, 10
-	mv t4, s4
-	mv t3, t5
-nextdigit:
-	slli t4, t4, 4
-	addi t3, t3, 4
-	and t1, a0, t4
-	srl t1, t1, t3 # next digit s1 in t1
-	bgtz t1, greaterzero #if t1 == 0 (t1 > 0)
-	li t1, 9
-	sll t1, t1, t3
-	add a0, a0, t1
-	j nextdigit
-greaterzero: # else if t1 > 0
-	li t1, 1
-	sll t1, t1, t3
-	sub a0, a0, t1
+	and t4, a0, t2  # symbol1
+	and t5, a1, t2  # symbol2
+	srl t4, t4, t1
+	srl t5, t5, t1
+	sub t6, t4, t5  # resultsymbol
+	add t6, t6, t3
+	li t3, 0
+	bgez t6 m1sub
+	li t3, -1
+	addi t6, t6, 10
 m1sub:
-	sub t0, s7, s8
-	sll t0, t0, t5
-	add s0, s0, t0
-	slli s4, s4, 4
-	addi t5, t5, 4
-	blt t5, t6 loopsub
-	mv a0, s0
-	pop5 s1, s4, s7, s8, s0
+	sll t6, t6, t1
+	add s1, s1, t6
+	slli t2, t2, 4
+	addi t1, t1, 4
+	li t0, 29
+	blt t1, t0 loopsub
+	mv a0, s1
+	pop1 s1
 	ret
 
 
