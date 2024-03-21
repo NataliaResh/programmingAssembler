@@ -37,6 +37,9 @@ loopreadbcd:
 	addi s2, s2, 1
 	j loopreadbcd
 endreadbcd:
+	bnez s1, getreusltreadbcd
+	li s3, 10
+getreusltreadbcd:
 	add a0, s1, s3
 	pop4 ra, s1, s2, s3
 	ret
@@ -75,15 +78,11 @@ subbcd:  # int subbcd(int, int)
 	push1 ra
 	getmoduleandsign a0, a2
 	getmoduleandsign a1, a3
-	li t0, 10
-	bne a3, t0, reverse
-	addi t0, t0, 1
-reverse:
-	mv a3, t0
+	xori a3, a3, 1
 	call sumbcd
 	pop1 ra
 	ret
-	
+
 
 addbcd:  # int addbcd(int, int)
 	push1 ra
@@ -103,7 +102,7 @@ sumbcd:  # int sumbcd(int a, int b, int sa, int sb);
 addgreater:
 	call subbcdmodule
 	add a0, a0, a2
-	j endopbcd
+	j endsumbcd
 addequalsign:
 	call addbcdmodule
 	add a0, a0, a2
@@ -117,17 +116,13 @@ addbcdmodule:  # int addbcdmodule(int a0, int a1);
 	li t1, 4
 	li t2, 0xf0
 	li t3, 0
-	li t4, 0  # symbol1
-	li t5, 0  # symbol2
-	li t6, 0  # resultsymbol
 	li s1, 0  # result
 loopadd:
-	and t4, a0, t2
-	and t5, a1, t2
+	and t4, a0, t2  # symbol1
+	and t5, a1, t2  # symbol2
 	srl t4, t4, t1
 	srl t5, t5, t1
-	add t6, t4, t5
-	beqz t3, m1add #if t3 != 0:
+	add t6, t4, t5  # resultsymbol
 	add t6, t6, t3
 	li t3, 0
 m1add: #if !(9 >= a0)
@@ -158,7 +153,7 @@ subbcdmodule:  # int subbcdmodule(int a0, int a1);
 	li t4, 0
 	li t5, 4
 	li t6, 29
-	li s4, 0x000000f0
+	li s4, 0xf0
 loopsub:
 	and s7, a0, s4
 	and s8, a1, s4
@@ -195,24 +190,20 @@ m1sub:
 
 
 printbcd:  # void printbcd(int);
-	push4 ra, s1, s2, s3
+	push3 ra, s1, s2
 	li s1, 28
-	li s2, 0xf0000000
-	mv s3, a0
-	li t0, 0xf
-	and t0, s3, t0
-	li t1, 0xa
-	beq t0, t1, loopprintbcd
+	mv s2, a0
+	andi t0, s2, 1
+	beqz t0, loopprintbcd
 	li a0, '-'
 	printch
 loopprintbcd:
-	and a0, s3, s2
-	srl a0, a0, s1
+	srl a0, s2, s1
+	andi a0, a0, 0xf
 	call decimaltochar
 	printch
-	srli s2, s2, 4
 	addi s1, s1, -4
 	li t0, 4
 	bge s1, t0, loopprintbcd
-	pop4 ra, s1, s2, s3
+	pop3 ra, s1, s2
 	ret
