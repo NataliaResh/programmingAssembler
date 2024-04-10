@@ -1,10 +1,13 @@
 #  char chartodecimal(char);
 #  char decimaltochar(char);
+#  int readdecimal();
 #  void printdecimal(int);
-#  int lendecimal(int)
-#  int mul10(int)
-#  int div10(int)
-#  int mod10(int)
+#  int lendecimal(int);
+#  int lenbinary(int);
+#  int mul10(int);
+#  int div10(int);
+#  int mod10(int);
+#  int divAB(int, int);
 
 
 chartodecimal:  #  char chartodecimal(char);
@@ -84,7 +87,7 @@ erroropdecimal:
 	error "Inncorect operator!"
 
 
-lendecimal:  #  int lendecimal(int)
+lendecimal:  #  int lendecimal(int);
 	push2 ra, s1
 	li s1, 0
 looplendecimal:
@@ -107,7 +110,7 @@ muloverflowerror:
 	error "Overflow!"
 
 
-div10:  #  int div10(int)
+div10:  #  int div10(int);
 	push3 ra, s1, s2
 	mv s2, a0
 	li s1, 0
@@ -127,7 +130,7 @@ enddiv10:
 	ret
 
 
-mod10:  #  int mod10(int)
+mod10:  #  int mod10(int);
 	push2 ra, s1
 	mv s1, a0
 	call div10
@@ -135,9 +138,67 @@ mod10:  #  int mod10(int)
 	sub a0, s1, a0
 	pop2 ra, s1
 	ret
+
+	
+lenbinary:  #  int lenbinary(int);
+	li t0, 0
+lenbinaryloop:
+	srli a0, a0, 1
+	addi t0, t0, 1
+	bnez a0, lenbinaryloop
+	mv a0, t0
+	ret
+
+sdivAB:  #  int sdivAB(int, int);
+	push2 ra, s1
+	li s1, 0
+	bgez a0, secondnumbersdivAB
+	neg a0, a0
+	addi s1, s1, 1
+secondnumbersdivAB:
+	bgez a1, calcsdivAB
+	neg a1, a1
+	addi s1, s1, -1
+calcsdivAB:
+	call udivAB
+	beqz s1, endsdivAB
+	neg a0, a0
+endsdivAB:
+	pop2 ra, s1
+	ret
+
+	
+udivAB:  #  int udivAB(int, int);
+	push3 ra, s1, s2
+	mv s1, a1
+	mv s2, a0
+	call lenbinary
+	swap a0, a1
+	call lenbinary # s2 = a, a1 = len a, s1 = b, a0 = len b
+	li t6, 0 #  result
+	li t1, 0xffffffff
+	sub t0, a1, a0  #  diff len a and b
+	sll t1, t1, t0
+	sll s1, s1, t0
+udivABloop:
+	and t2, s2, t1  #  t2 = tmp dividend
+	slli t6, t6, 1
+	# if (t2 >= b(s1)) :
+	bgt s1, t2, endudivABloop
+	addi t6, t6, 1
+	sub s2, s2, s1
+endudivABloop:
+	srli t1, t1, 1
+	srli s1, s1, 1
+	addi t0, t0, -1
+	bgez t0, udivABloop
+	
+	mv a0, t6
+	pop3 ra, s1, s2
+	ret
 	
 	
-printdecimal:  # void printdecimal(int);
+printdecimal:  #  void printdecimal(int);
 	push3 ra, s1, s2
 	li s2, 0
 	mv s1, a0
