@@ -9,6 +9,7 @@
 #  int mod10(int);
 #  int sdivAB(int, int);
 #  int udivAB(int, int);
+#  int insqrt(int);
 
 
 chartodecimal:  #  char chartodecimal(char);
@@ -197,6 +198,38 @@ endudivABloop:
 	mv a0, t6
 	pop3 ra, s1, s2
 	ret
+	
+	
+isqrt:  #  int insqrt(int);
+	push2 ra, s1
+	mv s1, a0
+	call lenbinary  # a0 = len
+	andi t0, a0, 1
+	addi a0, a0, -2
+	add a0, a0, t0
+	li t6, 0 #  result
+	li t1, 0xffffffff
+	sll t1, t1, a0
+isqrtloop:
+	and t2, s1, t1  #  t2 = tmp sqrt
+	slli t6, t6, 1
+	slli t0, t6, 1
+	addi t0, t0, 1
+	sll t0, t0, a0
+	# if (t2 >= t0) :
+	bgt t0, t2, endisqrtloop
+	addi t6, t6, 1
+	sub s1, s1, t0
+endisqrtloop:
+	srli t1, t1, 2
+	addi a0, a0, -2
+	bgez a0, isqrtloop
+	mv a0, t6
+	pop2 ra, s1
+	ret
+errorisqrt:
+	error "Sqrt from negative number!"
+	
 	
 	
 printdecimal:  #  void printdecimal(int);
