@@ -7,7 +7,8 @@
 #  int mul10(int);
 #  int div10(int);
 #  int mod10(int);
-#  int divAB(int, int);
+#  int sdivAB(int, int);
+#  int udivAB(int, int);
 
 
 chartodecimal:  #  char chartodecimal(char);
