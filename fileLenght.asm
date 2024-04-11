@@ -30,5 +30,6 @@ L1:
 	message "File length: "
 	messageI s2
 	printendl
-	  
+	mv a0, s1
+	call close
 	exit 0
