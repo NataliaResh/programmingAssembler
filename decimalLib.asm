@@ -112,6 +112,22 @@ muloverflowerror:
 	error "Overflow!"
 
 
+mulAB:  #  int mulAB(int, int);
+	li t0, 1
+	li t1, 0
+	li t3, 0  # result
+mulloop:
+	and t2, a1, t0
+	beqz t2, endmulloop
+	sll t2, a0, t1
+	add t3, t3, t2
+endmulloop:
+	slli t0, t0, 1
+	addi t1, t1, 1
+	bnez t0, mulloop
+	mv a0, t3
+	ret
+	
 div10:  #  int div10(int);
 	push3 ra, s1, s2
 	mv s2, a0
@@ -199,9 +215,22 @@ endudivABloop:
 	pop3 ra, s1, s2
 	ret
 	
+
+modAB:  #  int modAB(int, int);
+	push3 ra, s1, s2
+	mv s1, a0
+	mv s2, a1
+	call udivAB
+	mv a1, s2
+	call mulAB
+	sub a0, s1, a0
+	pop3 ra, s1, s2
+	ret
+
 	
 isqrt:  #  int insqrt(int);
 	push2 ra, s1
+	bltz a0, errorisqrt
 	mv s1, a0
 	call lenbinary  # a0 = len
 	andi t0, a0, 1
@@ -229,8 +258,57 @@ endisqrtloop:
 	ret
 errorisqrt:
 	error "Sqrt from negative number!"
-	
-	
+
+
+icbrt:  #  int icbrt(int);
+	push5 ra, s1, s2, s3, s4
+	push2 s5, s6
+	li s6, 0
+	bgez a0, mainicbrt
+	neg a0, a0
+	li s6, 1
+mainicbrt:
+	mv s1, a0  #  s1 = number
+	call lenbinary
+	mv s2, a0  #  s2 = len
+	li a1, 3
+	call modAB
+	sub s2, s2, a0
+	mv a0, s2
+	li s3, 0 #  result
+	li s4, 0xffffffff
+	sll s4, s4, s2
+icbrtloop:
+	mv a0, s3
+	mv a1, s3
+	call mulAB
+	li a1, 12
+	call mulAB
+	mv s5, a0  #  1100 * s3 * s3
+	mv a0, s3
+	li a1, 6
+	call mulAB
+	add a0, a0, s5
+	addi a0, a0 1  #  s5 + 110 * s3 + 1
+	sll a0, a0, s2
+	and t2, s1, s4  #  t2 = tmp sqrt
+	slli s3, s3, 1
+	# if (t2 >= a0) :
+	bgt a0, t2, endicbrtloop
+	addi s3, s3, 1
+	sub s1, s1, a0
+endicbrtloop:
+	srli s4, s4, 3
+	addi s2, s2, -3
+	bgez s2, icbrtloop
+	beqz s6, mainendicbrt
+	neg s3, s3
+mainendicbrt:
+	mv a0, s3
+	pop2 s5, s6
+	pop5 ra, s1, s2, s3, s4
+	ret
+
 	
 printdecimal:  #  void printdecimal(int);
 	push3 ra, s1, s2
