@@ -21,7 +21,7 @@ chartodecimal:  #  char chartodecimal(char);
 	ret
 errorchartodecimal:
 	error "Inncorect symbol!"
-	
+
 
 decimaltochar:  #  char decimaltochar(char);
 	li t0, 10
@@ -30,7 +30,6 @@ decimaltochar:  #  char decimaltochar(char);
 	ret
 errordecimaltochar:
 	error "Inncorect symbol!"
-	
 
 
 .macro addwithcheck %r1 %r2 %r3
@@ -188,17 +187,18 @@ endsdivAB:
 	
 udivAB:  #  int udivAB(int, int);
 	push3 ra, s1, s2
+	beqz a1, errorzerodiv
 	mv s1, a1
 	mv s2, a0
-	call lenbinary
 	swap a0, a1
-	call lenbinary # s2 = a, a1 = len a, s1 = b, a0 = len b
-	li t6, 0 #  result
-	li t1, 0xffffffff
-	sub t0, a1, a0  #  diff len a and b
-	sll t1, t1, t0
+	call lenbinary  # s2 = a, s1 = b, a0 = len b
+	neg a0, a0
+	addi t0, a0, 31
 	sll s1, s1, t0
+	li t6, 0 #  result
 udivABloop:
+	li t1, -1
+	sll t1, t1, t0
 	and t2, s2, t1  #  t2 = tmp dividend
 	slli t6, t6, 1
 	# if (t2 >= b(s1)) :
@@ -206,7 +206,6 @@ udivABloop:
 	addi t6, t6, 1
 	sub s2, s2, s1
 endudivABloop:
-	srli t1, t1, 1
 	srli s1, s1, 1
 	addi t0, t0, -1
 	bgez t0, udivABloop
@@ -214,6 +213,8 @@ endudivABloop:
 	mv a0, t6
 	pop3 ra, s1, s2
 	ret
+errorzerodiv:
+	error "Zero division!"
 	
 
 modAB:  #  int modAB(int, int);
