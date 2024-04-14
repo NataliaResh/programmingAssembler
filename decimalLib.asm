@@ -230,32 +230,27 @@ modAB:  #  int modAB(int, int);
 
 	
 isqrt:  #  int insqrt(int);
-	push2 ra, s1
+	push1 ra
 	bltz a0, errorisqrt
-	mv s1, a0
-	call lenbinary  # a0 = len
-	andi t0, a0, 1
-	addi a0, a0, -2
-	add a0, a0, t0
+	li t3, 30
 	li t6, 0 #  result
-	li t1, 0xffffffff
-	sll t1, t1, a0
 isqrtloop:
-	and t2, s1, t1  #  t2 = tmp sqrt
+	li t1, -1
+	sll t1, t1, t3
+	and t2, a0, t1  #  t2 = tmp sqrt
 	slli t6, t6, 1
 	slli t0, t6, 1
 	addi t0, t0, 1
-	sll t0, t0, a0
+	sll t0, t0, t3
 	# if (t2 >= t0) :
 	bgt t0, t2, endisqrtloop
 	addi t6, t6, 1
-	sub s1, s1, t0
+	sub a0, a0, t0
 endisqrtloop:
-	srli t1, t1, 2
-	addi a0, a0, -2
-	bgez a0, isqrtloop
+	addi t3, t3, -2
+	bgez t3, isqrtloop
 	mv a0, t6
-	pop2 ra, s1
+	pop1 ra
 	ret
 errorisqrt:
 	error "Sqrt from negative number!"
@@ -270,16 +265,11 @@ icbrt:  #  int icbrt(int);
 	li s6, 1
 mainicbrt:
 	mv s1, a0  #  s1 = number
-	call lenbinary
-	mv s2, a0  #  s2 = len
-	li a1, 3
-	call modAB
-	sub s2, s2, a0
-	mv a0, s2
+	li s2, 30  #  s2 = len
 	li s3, 0 #  result
-	li s4, 0xffffffff
-	sll s4, s4, s2
 icbrtloop:
+	li s4, -1
+	sll s4, s4, s2
 	mv a0, s3
 	mv a1, s3
 	call mulAB
