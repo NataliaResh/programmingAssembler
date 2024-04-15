@@ -202,15 +202,15 @@ udivABloop:
 	and t2, s2, t1  #  t2 = tmp dividend
 	slli t6, t6, 1
 	# if (t2 >= b(s1)) :
-	bgt s1, t2, endudivABloop
+	bgtu s1, t2, endudivABloop
 	addi t6, t6, 1
 	sub s2, s2, s1
 endudivABloop:
 	srli s1, s1, 1
 	addi t0, t0, -1
 	bgez t0, udivABloop
-	
 	mv a0, t6
+	mv a1, s2
 	pop3 ra, s1, s2
 	ret
 errorzerodiv:
