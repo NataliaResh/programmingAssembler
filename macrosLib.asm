@@ -23,14 +23,31 @@
 	pop1 a0
 .end_macro
 
-.macro error %str
+
+.macro message %str
 .data
 str: .asciz %str
 .text
-	printendl
 	la a0, str
 	syscall 4
+.end_macro
+
+
+.macro error %str
+.text
+	printendl
+	message %str
 	exit 1
+.end_macro
+
+.macro messageS %r
+	mv a0, %r
+	syscall 4
+.end_macro
+
+.macro messageI %r
+	mv a0, %r
+	syscall 1
 .end_macro
 
 
@@ -102,5 +119,3 @@ str: .asciz %str
 	pop4 %r1 %r2 %r3 %r4
 	pop1 %r5
 .end_macro
-
-

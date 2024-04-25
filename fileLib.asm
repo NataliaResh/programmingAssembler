@@ -40,22 +40,22 @@ readerror:
 .end_macro
 
 
-load:  #  int load(int size, int fb);
-	push2 s1, s2
-	mv s1, a0
-	mv s2, a1
+load:  #  char* load(int size, int fb);
+	mv t3, a0
+	mv t4, a1
 	addi a0, a0, 1
 	sbrk
+	mv t2, a0
 	li t0, 0
-	add t1, a0, s1
+	add t1, a0, t3
 	sb t0, 1(t1)  #  add \0 to end
 	mv a1, a0
-	mv a0, s2
-	mv a2, s1
+	mv a0, t4
+	mv a2, t3
 	read
-	li t0, 0
+	li t0, -1
 	beq t0, a0, errorread
-	pop2 s1, s2
+	mv a0, t2
 	ret
 errorread:
 	error "Can't read file"

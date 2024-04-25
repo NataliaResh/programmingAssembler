@@ -4,6 +4,7 @@ start:
 	
 .include "macrosLib.asm"
 .include "fileLib.asm"
+.include "stringLib.asm"
 
 	
 main:
@@ -15,20 +16,17 @@ main:
 	error "Need file name arg!"
 	
 L1:
-	lw s1, 0(s11)  #  s0: argv[0]
-	message "Input file: "
-	messageS, s1
-	printendl
-	
+	lw s1, 0(s11)  #  s0: argv[0]	
 	mv a0, s1
 	li a1, O_READ
 	call open
-	mv s1, a0
+	mv s1, a0  # fd
 	call flenght
 	mv a1, s1
 	call load
+	call countlines
 	mv s2, a0
-	message "File length: "
+	message "Count lines: "
 	messageI s2
 	printendl
 	mv a0, s1
