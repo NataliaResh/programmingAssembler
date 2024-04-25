@@ -23,9 +23,10 @@ L1:
 	mv a0, s1
 	li a1, O_READ
 	call open
-	
 	mv s1, a0
 	call flenght
+	mv a1, s1
+	call load
 	mv s2, a0
 	message "File length: "
 	messageI s2
@@ -33,3 +34,4 @@ L1:
 	mv a0, s1
 	call close
 	exit 0
+
