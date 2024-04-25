@@ -84,6 +84,7 @@ test:
 	OK 0 "abcde" 'a'
 	OK 3 "fffwwqw" 'w'
 	OK 2 "abcde" 'a'
+	OK 3 "abc", '\0'
 	NONE "abcdef" 'Q'
 	NONE "" '?'
 	NONE "abcde" 'e'
