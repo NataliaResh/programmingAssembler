@@ -30,11 +30,6 @@ readerror:
 .end_macro
 
 
-.macro sbrk
-	syscall 9
-.end_macro
-
-
 .macro read  #  int read(int fd, int addr, int len)
 	syscall 63
 .end_macro

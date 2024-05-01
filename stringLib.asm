@@ -1,12 +1,32 @@
 .include "decimalLib.asm"
 
-strchr:  #  char* strchr(char* str, char ch)
+
+.macro lowercase %r
+	li t0, 'Z'
+	bgt %r, t0, endlowercase
+	li t0, 'A'
+	blt %r, t0, endlowercase
+	addi %r, %r, 32
+endlowercase:
+.end_macro
+
+
+.macro strstrequal %i, %r1, %r2, %labeln
+	beqz %i, strstrnolc
+	lowercase %r1
+	lowercase %r2
+strstrnolc:
+	bne %r1, %r2, %labeln
+.end_macro
+
+
+strchr:  #  char* strchr(char* str, char ch, bool i)
 	addi a0, a0, -1
 strchrloop:
 	addi a0, a0, 1
 	lb t1, 0(a0)
 	beq t1, zero, endstrchr
-	bne t1, a1, strchrloop
+	strstrequal a2, t1, a1, strchrloop
 endstrchr:
 	beq t1, a1, retstrchr
 	li a0, 0
@@ -29,7 +49,7 @@ countlinesloop:
 	ret
 	
 
-split:  #  char** split(char*  str)
+split:  #  char**, int split(char*  str)
 	push5 ra, s1, s2, s3, s4
 	mv s1, a0  #  str
 	call countlines
@@ -92,7 +112,7 @@ printlines:  #  void printlines(char** array, int size, int start)
 printlinesloop:
 	messageI t0
 	lw t1, 0(s1)
-	message ":\t "
+	message ":"
 	messageS t1
 	printendl
 	addi s1, s1, 4
@@ -102,3 +122,98 @@ printlinesloop:
 	ret
 errorprintlines:
 	error "Incorrect start index!"
+
+
+strstr:  #  char* strstr(char* str1, char* str2, bool i)
+	push5 ra, s1, s2, s3, s4
+	mv s1, a0  #  str1
+	mv s2, a1  #  str2
+	mv s4, a2  #  i
+	li s3, 0  #  ans
+strstrloop:
+	lb a1 0(s2)  #  first char
+	mv a0, s1
+	mv a2, s4
+	call strchr
+	mv s1, a0
+	addi s1, s1, 1
+	beqz a0, notfoundstrstr
+	li t1, 0  #  index
+innerstrstrloop:
+	add t4, s2, t1
+	lb t4, 0(t4)
+	beqz t4, foundstrstr
+	add t3, a0, t1
+	lb t3, 0(t3)
+	beqz t3, notfoundstrstr
+	strstrequal s4, t3, t4, strstrloop
+	addi t1, t1, 1
+	j innerstrstrloop
+notfoundstrstr:
+	li a0, 0	
+foundstrstr:
+	pop5 ra, s1, s2, s3, s4
+	ret
+
+
+.macro checkgrepc %labely
+	andi t0, s6, 2
+	beqz t0, endcheckgrepc
+	addi s7, s7, 1
+	j %labely
+endcheckgrepc:
+.end_macro
+
+
+.macro checkgrepn
+	andi t0, s6, 4
+	beqz t0, endcheckgrepn
+	messageI s4
+	message ":"
+endcheckgrepn:
+.end_macro
+
+
+grep:  #  void grep(char** array, int size, char* str, int flags (vnci))
+	push5, ra, s1, s2, s3, s4
+	push3 s5, s6, s7 
+	mv s1, a0  #  array
+	mv s2, a1  #  size
+	mv s3, a2  #  str
+	li s4, 1  #  index
+	mv s6, a3  #  flags
+	li s7, 0  #  count
+greploop:
+	lw s5, 0(s1)
+	mv a0, s5
+	mv a1, s3
+	andi a2, s6, 1
+	call strstr
+	beqz a0, notfoundgrep
+	andi t0, s6, 8
+	bnez t0, greploopend
+	checkgrepc greploopend
+	checkgrepn
+	messageS s5
+	printendl
+	j greploopend
+notfoundgrep:
+	andi t0, s6, 8
+	beqz t0, greploopend
+	checkgrepc greploopend
+	checkgrepn
+	messageS s5
+	printendl
+greploopend:
+	addi s1, s1, 4
+	addi s4, s4, 1
+	ble s4, s2, greploop
+	andi t0, s6, 2
+	beqz t0, grependnotc
+	messageI s7
+	printendl
+grependnotc:
+	pop3 s5, s6, s7
+	pop5 ra, s1, s2, s3, s4
+	ret
+

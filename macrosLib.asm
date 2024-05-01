@@ -119,3 +119,9 @@ str: .asciz %str
 	pop4 %r1 %r2 %r3 %r4
 	pop1 %r5
 .end_macro
+
+
+.macro sbrk
+	syscall 9
+.end_macro
+
