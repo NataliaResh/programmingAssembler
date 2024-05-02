@@ -1,5 +1,10 @@
 .include "decimalLib.asm"
 
+.data
+spaces: .asciz " \t\n"
+endstr: .asciz "\0"
+
+.text
 
 .macro lowercase %r
 	li t0, 'Z'
@@ -217,3 +222,133 @@ grependnotc:
 	pop5 ra, s1, s2, s3, s4
 	ret
 
+
+strspn:  #  int strspn(char *str, char *sym)
+	push4 ra, s1, s2, s3
+	mv s1, a0  #  str
+	mv s2, a1  #  sym
+	li s3, -1  #  ans
+strspnloop:
+	addi s3, s3, 1
+	lb a1, 0(s1)
+	beqz a1, strspnend
+	mv a0, s2
+	li a3, 0
+	call strchr
+	addi s1, s1, 1
+	bnez a0, strspnloop
+strspnend:
+	mv a0, s3
+	pop4 ra, s1, s2, s3
+	ret
+	
+
+strcspn:  #  int strcspn(char *str, char *sym)
+	push4 ra, s1, s2, s3
+	mv s1, a0  #  str
+	mv s2, a1  #  sym
+	li s3, -1  #  ans
+strscpnloop:
+	addi s3, s3, 1
+	lb a1, 0(s1)
+	beqz a1, strscpnend
+	mv a0, s2
+	li a3, 0
+	call strchr
+	addi s1, s1, 1
+	beqz a0, strscpnloop
+strscpnend:
+	mv a0, s3
+	pop4 ra, s1, s2, s3
+	ret
+
+
+wordscount:  #  int wordscount(char* str)
+	push4 ra, s1, s2, s3
+	mv s1, a0
+	la s2, spaces
+	li s3, -1  #  ans
+wordscountloop:
+	addi s3, s3, 1
+	lb t0, 0(s1)
+	mv a0, t0
+	beqz t0, wordscountend
+	mv a0, s1
+	mv a1, s2
+	call strspn
+	add s1, s1, a0
+	lb t0, 0(s1)
+	beqz t0, wordscountend
+	mv a0, s1
+	mv a1, s2
+	call strcspn
+	add s1, s1, a0
+	bnez a0, wordscountloop
+wordscountend:
+	mv a0, s3
+	pop4 ra, s1, s2, s3
+	ret
+
+
+maxlengh:  #  int maxlengh(char** array, int size)
+	push5 ra, s1, s2, s3, s4
+	mv s1, a0  #  array
+	mv s2, a1  #  size
+	la s4, endstr
+	li s3, 0
+maxlenghloop:
+	lw a0, 0(s1)
+	mv a1, s4
+	call strcspn
+	addi s1, s1, 4
+	blt a0, s3, nomaxlengh
+	mv s3, a0
+nomaxlengh:
+	addi s2, s2, -1
+	bnez s2, maxlenghloop
+	mv a0, s3
+	pop5 ra, s1, s2, s3, s4
+	ret
+
+
+wc:  #  void wc(char* str, int size, int flags (lwcL))
+	push5 ra, s1, s2, s3, s4
+	push2 s5, s6
+	bnez a2, notchangeflags
+	li a2, 14
+notchangeflags:
+	mv s1, a0  #  str
+	mv s2, a1  #  bytes
+	mv s3, a2  #  flags
+	mv a0, s1
+	call wordscount
+	mv s6, a0  #  words
+	mv a0, s1
+	call split
+	mv s4, a1  #  lines
+	mv s5, a0  #  array
+	andi t0, s3, 8
+	beqz t0, checkwcw
+	messageI s4
+	message " "
+checkwcw:
+	andi t0, s3, 4
+	beqz t0, checkwcc
+	messageI s6
+	message " "
+checkwcc:
+	andi t0, s3, 2
+	beqz t0, checkwcL
+	messageI s2
+	message " "
+checkwcL:
+	andi t0, s3, 1
+	beqz t0, wcend
+	mv a0, s5
+	mv a1, s4
+	call maxlengh
+	messageI a0
+wcend:
+	pop2 s5, s6
+	pop5 ra, s1, s2, s3, s4
+	ret
