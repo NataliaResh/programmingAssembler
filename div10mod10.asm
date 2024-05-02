@@ -8,15 +8,15 @@ start:
 	
 	
 main:
-	call readhex
+	call readdecimal
 	mv s1, a0
 	call div10
 	printendl
-	call printhex
+	call printdecimal
 	
 	mv a0, s1
 	call mod10
 	printendl
-	call printhex
+	call printdecimal
 exit:
 	exit 0

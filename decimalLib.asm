@@ -126,16 +126,18 @@ endmulloop:
 	bnez t0, mulloop
 	mv a0, t3
 	ret
-	
+
+
 div10:  #  int div10(int);
 	push3 ra, s1, s2
 	mv s2, a0
 	li s1, 0
 	li t0, 10
 	blt a0, t0, enddiv10
-	mv s1, a0
-	srli a0, a0, 2
+	mv s1, a0  #  x/10 = x/8 - 4 * (x/16)/10
+	srli a0, a0, 4
 	call div10
+	slli a0, a0, 2
 	srli s1, s1, 3
 	sub s1, s1, a0
 enddiv10:
@@ -143,9 +145,20 @@ enddiv10:
 	call mul10
 	slt a0, s2, a0
 	sub a0, s1, a0
+	mv s1, a0
+	call mul10
+	slt a0, s2, a0
+	sub a0, s1, a0
+	mv s1, a0
+	call mul10
+	slt a0, s2, a0
+	sub a0, s1, a0
+	mv s1, a0
+	call mul10
+	slt a0, s2, a0
+	sub a0, s1, a0
 	pop3 ra, s1, s2
 	ret
-
 
 mod10:  #  int mod10(int);
 	push2 ra, s1
