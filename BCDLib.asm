@@ -109,7 +109,7 @@ addequalsign:
 endsumbcd:
 	pop1 ra
 	ret
-	
+
 
 addbcdmodule:  # int addbcdmodule(int a0, int a1);
 	push1 s1
