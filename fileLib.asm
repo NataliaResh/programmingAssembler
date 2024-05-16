@@ -15,12 +15,17 @@ close:  #  int close(int fd);
 	ret
 	
 read:  #  void read(int fd, char* buf, int size);
-	mv, t2, a2
+	mv t2, a2
 	syscall 63
 	bne a0, t2, readerror
 	ret
 readerror:
 	error "Cannot read file!"
+	
+	
+write:  #  void write(int fd, char* buf, int size);
+	syscall 64
+	ret
 	
 	
 .macro lseek  #  int lseek(int fd, int offset, int flag);
